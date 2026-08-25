@@ -49,4 +49,42 @@ if node css-diff.mjs diff "$TMP/old.snap.json" "$TMP/new.snap.json" --collapse -
 fi
 node test-assert.mjs "$TMP/report2.json" diff collapse || fail "dump/diff assertions"
 
+echo "== component targeting: --root 'li' (multi-match leaves) =="
+if node css-diff.mjs compare "http://127.0.0.1:$PORT_OLD/" "http://127.0.0.1:$PORT_NEW/" \
+  --viewports 375 --root 'li' --collapse -o "$TMP/li.json"; then
+  fail "component compare (--root li) reported no differences"
+fi
+node -e '
+  const r = require(process.argv[1]);
+  if (!r.changes.length) { console.error("no records for --root li"); process.exit(1); }
+  for (const c of r.changes) {
+    const last = c.path.split(">").pop();
+    if (!last.startsWith("li")) { console.error("record outside li: " + c.path); process.exit(1); }
+  }
+  const added = r.changes.filter((c) => c.type === "added").length;
+  if (added !== 1) { console.error("expected 1 added li, got " + added); process.exit(1); }
+  console.log("multi-match targeting OK (" + r.changes.length + " li records)");
+' "$TMP/li.json" || fail "multi-match targeting assertions"
+
+echo "== component targeting: --root 'ul' (subtree excludes siblings) =="
+if node css-diff.mjs compare "http://127.0.0.1:$PORT_OLD/" "http://127.0.0.1:$PORT_NEW/" \
+  --viewports 375 --root 'ul' --collapse -o "$TMP/ul.json"; then
+  fail "--root ul reported no differences"
+fi
+node -e '
+  const r = require(process.argv[1]);
+  if (!r.changes.length) { console.error("no records for --root ul"); process.exit(1); }
+  for (const c of r.changes) {
+    if (!c.path.includes(">ul")) { console.error("record outside ul subtree: " + c.path); process.exit(1); }
+  }
+  console.log("subtree targeting OK (" + r.changes.length + " records under ul)");
+' "$TMP/ul.json" || fail "subtree targeting assertions"
+
+echo "== component targeting: no match errors cleanly =="
+if node css-diff.mjs compare "http://127.0.0.1:$PORT_OLD/" "http://127.0.0.1:$PORT_NEW/" \
+  --viewports 375 --root '.does-not-exist' -o "$TMP/none.json" 2>"$TMP/err.txt"; then
+  fail "expected failure for unmatched --root selector"
+fi
+grep -q "matched no elements" "$TMP/err.txt" || fail "missing 'matched no elements' error message"
+
 echo "PASS"

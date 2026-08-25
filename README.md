@@ -54,8 +54,8 @@ CI-friendly as-is.
 | --- | --- |
 | `--viewports 375,768,1024,1440` | Widths to capture (default shown; height via `--height`, default 900) |
 | `--collapse` | Fold cascade/shorthand noise into single records (**recommended**) |
+| `--root ".card"` | Target specific node(s): every match plus its subtree (default `body`, whole page) |
 | `--md report.md` | Also write a human-readable Markdown report |
-| `--root "#app"` | Capture only a subtree (default `body`) |
 | `--props color,padding` | Compare only these properties (default: curated list of ~160) |
 | `--all-props` | Compare every computed property |
 | `--ignore font-family` | Properties to skip when diffing |
@@ -68,6 +68,24 @@ CI-friendly as-is.
 | `--save-snapshots base` | (compare) also write `base.old.json` / `base.new.json` |
 
 Run `node css-diff.mjs --help` for the full list.
+
+### Iterating on a single component
+
+Point `--root` at your component instead of the whole page. **Every match** is
+captured — the element plus its subtree — so one flag covers all instances, and
+unrelated parts of the page are ignored entirely:
+
+```bash
+# all instances of .card, and nothing else
+node css-diff.mjs compare http://localhost:3000/pricing http://localhost:3001/pricing \
+  --root ".card" --collapse
+
+# several components at once
+node css-diff.mjs compare ... --root ".card, .sidebar, #nav"
+```
+
+Instances match across builds by DOM position, so a new/removed instance shows up
+as an `added`/`removed` record rather than misaligning the rest.
 
 ## Report format
 

@@ -70,7 +70,9 @@ to also write a human-readable Markdown report.
 Options:
   --viewports 375,768,1024,1440   widths to capture (default: ${DEFAULT_VIEWPORTS.join(',')})
   --height 900                    viewport height (default: ${DEFAULT_HEIGHT})
-  --root body                     CSS selector of subtree to capture (default: body)
+  --root body                     selector for the root node(s): every match and its subtree
+                                  is captured. Target one component (--root ".card") or several
+                                  (--root ".card, .sidebar"). Default: body (whole page)
   --props color,padding,...       compare only these properties (default: curated list of ~160)
   --all-props                     compare every computed property instead of the curated list
   --ignore font-family,...        properties to ignore when diffing
@@ -167,8 +169,15 @@ function captureInPage({ rootSelector, props, pseudo, freeze }) {
     'script', 'style', 'noscript', 'link', 'meta', 'title', 'head', 'template',
     'source', 'track', 'base', 'basefont', 'param', 'col', 'colgroup', 'wbr', 'br',
   ]);
-  const rootEl = rootSelector === 'html' ? document.documentElement : document.querySelector(rootSelector);
-  if (!rootEl) throw new Error('root selector not found: ' + rootSelector);
+  const rootEls = (() => {
+    if (rootSelector === 'html') return [document.documentElement];
+    try {
+      return Array.from(document.querySelectorAll(rootSelector));
+    } catch (e) {
+      throw new Error('invalid --root selector "' + rootSelector + '": ' + e.message);
+    }
+  })();
+  if (!rootEls.length) throw new Error('root selector matched no elements: ' + rootSelector);
 
   const pathOf = (el) => {
     const parts = [];
@@ -223,20 +232,25 @@ function captureInPage({ rootSelector, props, pseudo, freeze }) {
   };
 
   const elements = {};
-  const all = [rootEl, ...Array.from(rootEl.querySelectorAll('*'))];
-  for (const el of all) {
-    if (SKIP.has(el.tagName.toLowerCase())) continue;
-    const entry = { hint: hintOf(el), box: boxOf(el), styles: styleOf(el, null) };
-    if (pseudo) {
-      for (const pe of ['::before', '::after']) {
-        const cs = window.getComputedStyle(el, pe);
-        const content = cs.getPropertyValue('content');
-        if (content && content !== 'none' && content !== 'normal') {
-          entry[pe] = { content, styles: styleOf(el, pe) };
+  const seen = new Set();
+  for (const rootEl of rootEls) {
+    const all = [rootEl, ...Array.from(rootEl.querySelectorAll('*'))];
+    for (const el of all) {
+      if (seen.has(el)) continue;
+      seen.add(el);
+      if (SKIP.has(el.tagName.toLowerCase())) continue;
+      const entry = { hint: hintOf(el), box: boxOf(el), styles: styleOf(el, null) };
+      if (pseudo) {
+        for (const pe of ['::before', '::after']) {
+          const cs = window.getComputedStyle(el, pe);
+          const content = cs.getPropertyValue('content');
+          if (content && content !== 'none' && content !== 'normal') {
+            entry[pe] = { content, styles: styleOf(el, pe) };
+          }
         }
       }
+      elements[pathOf(el)] = entry;
     }
-    elements[pathOf(el)] = entry;
   }
   return elements;
 }
