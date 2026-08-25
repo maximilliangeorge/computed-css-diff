@@ -1,0 +1,15 @@
+{
+  "name": "computed-css-diff",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "computed-css-diff": "./css-diff.mjs"
+  },
+  "scripts": {
+    "test": "bash test.sh"
+  },
+  "dependencies": {
+    "playwright": "^1.55.0"
+  }
+}

@@ -1,0 +1,4 @@
+node_modules/
+css-diff-report.json
+css-diff-report.md
+*.snap.json
