@@ -29,7 +29,7 @@
     "node": ">=18"
   },
   "bin": {
-    "computed-css-diff": "./css-diff.mjs"
+    "computed-css-diff": "css-diff.mjs"
   },
   "files": [
     "css-diff.mjs",
