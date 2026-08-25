@@ -1,11 +1,41 @@
 {
   "name": "computed-css-diff",
   "version": "0.1.0",
+  "description": "Headless computed-style diffing for CSS refactors. Captures getComputedStyle across viewports on two builds and diffs the values, so a stylesheet migration (e.g. SCSS to Tailwind) can be verified element-by-element.",
   "type": "module",
-  "private": true,
+  "license": "MIT",
+  "author": "Maximillian George",
+  "keywords": [
+    "css",
+    "scss",
+    "tailwind",
+    "refactor",
+    "migration",
+    "diff",
+    "computed-style",
+    "visual-regression",
+    "playwright",
+    "cli"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maximilliangeorge/computed-css-diff.git"
+  },
+  "homepage": "https://github.com/maximilliangeorge/computed-css-diff#readme",
+  "bugs": {
+    "url": "https://github.com/maximilliangeorge/computed-css-diff/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
   "bin": {
     "computed-css-diff": "./css-diff.mjs"
   },
+  "files": [
+    "css-diff.mjs",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "test": "bash test.sh"
   },

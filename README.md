@@ -26,8 +26,15 @@ exactly that, which makes it:
 ## Install
 
 ```bash
-npm install
+npm install -g computed-css-diff
 npx playwright install chromium
+```
+
+Or from source:
+
+```bash
+git clone https://github.com/maximilliangeorge/computed-css-diff.git
+cd computed-css-diff && npm install && npx playwright install chromium
 ```
 
 Requires Node 18+.
@@ -151,8 +158,13 @@ want to review.
 ## Development
 
 ```bash
-bash test.sh   # serves fixtures on two ports, runs 5 e2e scenarios
+bash test.sh   # serves fixtures on two ports, runs the e2e scenarios
 ```
 
 Scenarios: collapsed compare, uncollapsed compare (raw keeps `border-color`),
-self-compare must yield zero diffs (determinism), and the dump→diff flow.
+self-compare must yield zero diffs (determinism), the dump→diff flow, component
+targeting (`--root` multi-match, subtree scoping, no-match error).
+
+## License
+
+MIT
